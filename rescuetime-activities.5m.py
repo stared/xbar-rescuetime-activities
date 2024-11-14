@@ -1,10 +1,12 @@
 #!/usr/bin/env PYTHONIOENCODING=UTF-8 python3
 # <xbar.title>RescueTime Activities</xbar.title>
-# <xbar.version>v1.2</xbar.version>
+# <xbar.version>v1.3</xbar.version>
 # <xbar.author>Piotr Migdał</xbar.author>
 # <xbar.author.github>stared</xbar.author.github>
 # <xbar.desc>List your RescueTime activities in the status bar</xbar.desc>
-# <xbar.dependencies>python</xbar.dependencies>
+# <xbar.dependencies>python, Pillow (optional)</xbar.dependencies>
+# <xbar.abouturl>https://github.com/stared/xbar-rescuetime-activities</xbar.abouturl>
+
 #
 # You need a RescueTime account and API key.
 # Generate the key at https://www.rescuetime.com/anapi/manage
@@ -15,8 +17,6 @@ import json
 import datetime
 import urllib.parse
 import urllib.request
-import base64
-from io import BytesIO
 
 # Constants
 API_KEY_PATH = os.path.expanduser("~/Library/RescueTime.com/api.key")
@@ -59,10 +59,7 @@ def fetch_data(url: str, params: dict) -> dict:
 
 
 def rescuetime_activity_data(params: str) -> list[dict]:
-    """See RescueTime API docs for details, https://www.rescuetime.com/rtx/developers.
-
-    Note: User data, particularly activity logs, is synced to the RescueTime servers on a set interval depending on the user's plan subscription. Premium/Organization (paid) plan users' activities are synced every 3 minutes, Lite (free) plan users' activities are synced every 30 minutes. Once the RescueTime app has synced with our servers, the data is immediately available in API results.
-    """
+    """See RescueTime API docs for details, https://www.rescuetime.com/rtx/developers."""
     result = fetch_data("https://www.rescuetime.com/anapi/data", params)
 
     if not result or "rows" not in result:
@@ -87,6 +84,8 @@ def format_time(seconds: int) -> str:
 def create_chart_image(hours_data: dict) -> str:
     """Create a minimalistic stacked bar chart image."""
     from PIL import Image, ImageDraw
+    import base64
+    from io import BytesIO
 
     # Chart dimensions
     WIDTH = 200
@@ -219,7 +218,7 @@ def main() -> None:
             f"font='Menlo' size=12 color={MAPPING_COLOR[p_value]}"
         )
     print("---")
-    print("Activities")
+    print("Top activities")
 
     # Print top activities
     for activity in activities[:TOP_ACTIVITIES]:
@@ -234,7 +233,6 @@ def main() -> None:
     print("---")
     print("Productivity by hour")
 
-    # Get hourly data
     hours_data = get_hourly_productivity_data(key, date_str)
 
     try:
@@ -244,6 +242,17 @@ def main() -> None:
         print("---")
         print("To see daily chart install Pillow")
         print("/usr/bin/python3 -m pip install Pillow")
+
+    # Add notes section
+    print("---")
+    print("Notes")
+    print("-- RescueTime data syncs every 3 min (Premium) or 30 min (Free)")
+    print("-- Activities shown are from the last 24 hours")
+    print("-- Colors indicate productivity level")
+    print("-- By Piotr Migdał | href=https://p.migdal.pl")
+    print(
+        "-- Source code available | href=https://github.com/stared/xbar-rescuetime-activities"
+    )
 
 
 if __name__ == "__main__":
