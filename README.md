@@ -12,6 +12,10 @@ Requirements:
 This plugin is inspired by the [RescueTime plugin](https://xbarapp.com/docs/plugins/Dev/rescuetime.1h.py.html) by [Paul Traylor](https://github.com/kfdm).
 I rewrote it to display a detailed list of activities, rather than just a summary of productive and non-distractive time.
 
+## How it looks
+
+![RescueTime Activities](./xbar-rescuetime-activities-screenshot.png)
+
 ## Further Reading
 
 Check out my earlier blog post: [ADHD Tech Stack: Auto Time Tracking](https://p.migdal.pl/blog/2020/05/adhd-tech-stack-auto-time-tracking).

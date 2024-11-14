@@ -5,6 +5,7 @@
 # <xbar.author.github>stared</xbar.author.github>
 # <xbar.desc>List your RescueTime activities in the status bar</xbar.desc>
 # <xbar.dependencies>python, Pillow (optional)</xbar.dependencies>
+# <xbar.image>https://github.com/stared/xbar-rescuetime-activities/blob/main/xbar-rescuetime-activities-screenshot.png</xbar.image>
 # <xbar.abouturl>https://github.com/stared/xbar-rescuetime-activities</xbar.abouturl>
 
 #
