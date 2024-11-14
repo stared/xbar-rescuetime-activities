@@ -1,6 +1,6 @@
 #!/usr/bin/env PYTHONIOENCODING=UTF-8 python3
 # <xbar.title>RescueTime Activities</xbar.title>
-# <xbar.version>v1.3</xbar.version>
+# <xbar.version>v1.4</xbar.version>
 # <xbar.author>Piotr Migdał</xbar.author>
 # <xbar.author.github>stared</xbar.author.github>
 # <xbar.desc>List your RescueTime activities in the status bar</xbar.desc>
@@ -212,8 +212,9 @@ def print_productivity_totals(activities: list[dict]) -> None:
             for activity in activities
             if condition(activity["Productivity"])
         )
+        formatted_name = f"{name}:".ljust(12)
         print(
-            f"{name}: {format_time(total_seconds)} | "
+            f"{formatted_name} {format_time(total_seconds):>6} | "
             f"font='Menlo' size=12 color={MAPPING_COLOR[p_value]}"
         )
     print("---")
@@ -226,7 +227,7 @@ def print_top_activities(activities: list[dict]) -> None:
         name = activity["Activity"]
         productivity = activity["Productivity"]
         print(
-            f"{format_time(seconds):>5} {name} | "
+            f"{format_time(seconds):>6} {name} | "
             f"font='Menlo' size=12 trim=false color={MAPPING_COLOR[productivity]}"
         )
 
