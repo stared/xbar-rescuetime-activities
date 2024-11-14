@@ -11,3 +11,12 @@ You need:
 
 The plugin is inspired by [RescueTime plugin](https://xbarapp.com/docs/plugins/Dev/rescuetime.1h.py.html) by [Paul Traylor](https://github.com/kfdm).
 I rewrote it, as I wanted to see the list of concrete activities, rather than just a summary of productive and not distractive time.
+
+## Reading
+
+See my older blog post [ADHD tech stack: auto time tracking](https://p.migdal.pl/blog/2020/05/adhd-tech-stack-auto-time-tracking).
+
+## To do
+
+- Add daily chart of productivity
+- Add weekly chart of productivity
