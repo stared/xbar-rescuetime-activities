@@ -18,5 +18,4 @@ Check out my earlier blog post: [ADHD Tech Stack: Auto Time Tracking](https://p.
 
 ## TODO
 
-- Add a daily productivity chart
 - Add a weekly productivity chart

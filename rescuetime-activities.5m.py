@@ -1,6 +1,6 @@
 #!/usr/bin/env PYTHONIOENCODING=UTF-8 python3
 # <xbar.title>RescueTime Activities</xbar.title>
-# <xbar.version>v1.1</xbar.version>
+# <xbar.version>v1.2</xbar.version>
 # <xbar.author>Piotr Migdał</xbar.author>
 # <xbar.author.github>stared</xbar.author.github>
 # <xbar.desc>List your RescueTime activities in the status bar</xbar.desc>
@@ -15,6 +15,8 @@ import json
 import datetime
 import urllib.parse
 import urllib.request
+import base64
+from io import BytesIO
 
 # Constants
 API_KEY_PATH = os.path.expanduser("~/Library/RescueTime.com/api.key")
@@ -82,6 +84,89 @@ def format_time(seconds: int) -> str:
         return f"{minutes}m"
 
 
+def create_chart_image(hours_data: dict) -> str:
+    """Create a minimalistic stacked bar chart image."""
+    from PIL import Image, ImageDraw
+
+    # Chart dimensions
+    WIDTH = 200
+    HEIGHT = 40
+
+    # Create image with transparent background
+    img = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+
+    # Find max total for scaling
+    max_total = max(sum(prod_times.values()) for prod_times in hours_data.values())
+
+    # Colors for productivity levels (including alpha for transparency)
+    OPACITY = 127
+
+    def hex_to_rgba(hex_color: str, opacity: int) -> tuple:
+        """Convert hex color to RGBA tuple."""
+        rgb = tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
+        return rgb + (opacity,)
+
+    colors = {
+        level: hex_to_rgba(MAPPING_COLOR[level], OPACITY) for level in range(-2, 3)
+    }
+
+    # Draw bars
+    bar_width = WIDTH // 24  # Calculate bar width based on number of hours
+    for hour in range(24):
+        if hour not in hours_data or not any(hours_data[hour].values()):
+            continue
+
+        x = hour * bar_width
+        y_bottom = HEIGHT
+
+        # Stack the bars for each productivity level
+        for prod in [2, 1, 0, -1, -2]:
+            if hours_data[hour][prod] > 0:
+                height = int((hours_data[hour][prod] / max_total) * HEIGHT)
+                y_top = y_bottom - height
+
+                draw.rectangle(
+                    [x, y_top, x + bar_width, y_bottom],
+                    fill=colors[prod],
+                )
+                y_bottom = y_top
+
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    return base64.b64encode(buffer.getvalue()).decode()
+
+
+def get_hourly_productivity_data(key: str, date_str: str) -> dict:
+    """Fetch and process hourly productivity data."""
+    params = {
+        "key": key,
+        "restrict_kind": "productivity",
+        "interval": "hour",
+        "perspective": "interval",
+        "restrict_begin": date_str,
+        "restrict_end": date_str,
+        "format": "json",
+    }
+
+    result = fetch_data("https://www.rescuetime.com/anapi/data", params)
+
+    if not result or "rows" not in result:
+        return {}
+
+    # Initialize hours dict
+    hours_data = {i: {p: 0 for p in range(-2, 3)} for i in range(24)}
+
+    # Process rows
+    for row in result["rows"]:
+        hour = int(row[0].split("T")[1][:2])
+        seconds = row[1]
+        productivity = row[3]
+        hours_data[hour][productivity] += seconds
+
+    return hours_data
+
+
 def main() -> None:
     """Main function to execute the script logic."""
 
@@ -144,6 +229,21 @@ def main() -> None:
         print(
             f"{format_time(seconds):>5} {name} | font='Menlo' size=12 trim=false color={MAPPING_COLOR[productivity]}"
         )
+
+    # Add hourly chart
+    print("---")
+    print("Productivity by hour")
+
+    # Get hourly data
+    hours_data = get_hourly_productivity_data(key, date_str)
+
+    try:
+        base64_img = create_chart_image(hours_data)
+        print(f"| image={base64_img}")
+    except ImportError:
+        print("---")
+        print("To see daily chart install Pillow")
+        print("/usr/bin/python3 -m pip install Pillow")
 
 
 if __name__ == "__main__":
