@@ -18,7 +18,7 @@ import datetime
 import urllib.parse
 import urllib.request
 
-# Constants
+
 API_KEY_PATH = os.path.expanduser("~/Library/RescueTime.com/api.key")
 
 MAPPING_COLOR = {
@@ -87,18 +87,14 @@ def create_chart_image(hours_data: dict) -> str:
     import base64
     from io import BytesIO
 
-    # Chart dimensions
     WIDTH = 200
     HEIGHT = 40
 
-    # Create image with transparent background
     img = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
-    # Find max total for scaling
     max_total = max(sum(prod_times.values()) for prod_times in hours_data.values())
 
-    # Colors for productivity levels (including alpha for transparency)
     OPACITY = 127
 
     def hex_to_rgba(hex_color: str, opacity: int) -> tuple:
@@ -110,8 +106,7 @@ def create_chart_image(hours_data: dict) -> str:
         level: hex_to_rgba(MAPPING_COLOR[level], OPACITY) for level in range(-2, 3)
     }
 
-    # Draw bars
-    bar_width = WIDTH // 24  # Calculate bar width based on number of hours
+    bar_width = WIDTH // 24
     for hour in range(24):
         if hour not in hours_data or not any(hours_data[hour].values()):
             continue
@@ -153,10 +148,8 @@ def get_hourly_productivity_data(key: str, date_str: str) -> dict:
     if not result or "rows" not in result:
         return {}
 
-    # Initialize hours dict
     hours_data = {i: {p: 0 for p in range(-2, 3)} for i in range(24)}
 
-    # Process rows
     for row in result["rows"]:
         hour = int(row[0].split("T")[1][:2])
         seconds = row[1]
@@ -167,10 +160,7 @@ def get_hourly_productivity_data(key: str, date_str: str) -> dict:
 
 
 def main() -> None:
-    """Main function to execute the script logic."""
-
     key = load_api_key(API_KEY_PATH)
-
     date_str = datetime.date.today().strftime("%Y-%m-%d")
 
     activities = rescuetime_activity_data(
@@ -181,26 +171,35 @@ def main() -> None:
             "restrict_begin": date_str,
             "restrict_end": date_str,
             "restrict_kind": "activity",
-        },
+        }
     )
     pulse = fetch_data(
         "https://www.rescuetime.com/anapi/current_productivity_pulse.json",
         params={"key": key},
     )
-
-    # Calculate total productive time
     productive_seconds = sum(
         activity["Time Spent (seconds)"]
         for activity in activities
         if activity["Productivity"] > 0
     )
 
-    # Print header with total productive time and productivity pulse color
+    print_header(productive_seconds, pulse)
+    print_productivity_totals(activities)
+    print_top_activities(activities)
+
+    hours_data = get_hourly_productivity_data(key, date_str)
+    print_hourly_chart(hours_data)
+
+    print_notes()
+
+
+def print_header(productive_seconds: int, pulse: dict) -> None:
     print(f"{format_time(productive_seconds)} | color={pulse.get('color', '#000000')}")
     print("---")
-    print("RescueTime | href=https://www.rescuetime.com/dashboard?src=bitbar")
+    print("RescueTime Activites | href=https://www.rescuetime.com/dashboard?src=bitbar")
 
-    # Calculate totals for each productivity category
+
+def print_productivity_totals(activities: list[dict]) -> None:
     categories = [
         ("Productive", lambda p: p > 0, 2),
         ("Neutral", lambda p: p == 0, 0),
@@ -218,23 +217,23 @@ def main() -> None:
             f"font='Menlo' size=12 color={MAPPING_COLOR[p_value]}"
         )
     print("---")
-    print("Top activities")
 
-    # Print top activities
+
+def print_top_activities(activities: list[dict]) -> None:
+    print("Top activities")
     for activity in activities[:TOP_ACTIVITIES]:
         seconds = activity["Time Spent (seconds)"]
         name = activity["Activity"]
         productivity = activity["Productivity"]
         print(
-            f"{format_time(seconds):>5} {name} | font='Menlo' size=12 trim=false color={MAPPING_COLOR[productivity]}"
+            f"{format_time(seconds):>5} {name} | "
+            f"font='Menlo' size=12 trim=false color={MAPPING_COLOR[productivity]}"
         )
 
-    # Add hourly chart
+
+def print_hourly_chart(hours_data: dict) -> None:
     print("---")
     print("Productivity by hour")
-
-    hours_data = get_hourly_productivity_data(key, date_str)
-
     try:
         base64_img = create_chart_image(hours_data)
         print(f"| image={base64_img}")
@@ -243,15 +242,17 @@ def main() -> None:
         print("To see daily chart install Pillow")
         print("/usr/bin/python3 -m pip install Pillow")
 
-    # Add notes section
+
+def print_notes() -> None:
     print("---")
     print("Notes")
     print("-- RescueTime data syncs every 3 min (Premium) or 30 min (Free)")
     print("-- Activities shown are from the last 24 hours")
     print("-- Colors indicate productivity level")
-    print("-- By Piotr Migdał | href=https://p.migdal.pl")
+    print("-- By Piotr Migdał (2024) | href=https://p.migdal.pl")
     print(
-        "-- Source code available | href=https://github.com/stared/xbar-rescuetime-activities"
+        "-- Source code available | "
+        "href=https://github.com/stared/xbar-rescuetime-activities"
     )
 
 
