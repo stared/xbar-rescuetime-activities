@@ -1,4 +1,4 @@
-#!/usr/bin/env PYTHONIOENCODING=UTF-8 python3
+#!/usr/bin/env -S PATH="${PATH}:/opt/homebrew/bin:/usr/local/bin" PYTHONIOENCODING=UTF-8 python3
 # <xbar.title>RescueTime Activities</xbar.title>
 # <xbar.version>v1.5</xbar.version>
 # <xbar.author>Piotr Migdał</xbar.author>
@@ -10,6 +10,7 @@
 # <xbar.var>string(VAR_RESCUETIME_API_KEY=""): RescueTime API key - create at https://www.rescuetime.com/anapi/manage</xbar.var>
 # <xbar.var>number(VAR_ACTIVITIES_LIMIT="15"): Limit the number of activities to show.</xbar.var>
 
+import sys
 import os
 import json
 import datetime
@@ -237,7 +238,8 @@ def print_hourly_chart(hours_data: dict) -> None:
     except ImportError:
         print("---")
         print("To see daily chart install Pillow")
-        print("/usr/bin/python3 -m pip install Pillow")
+        print("-- most likely you need to run:")
+        print(f"-- {sys.executable} -m pip install Pillow")
 
 
 def print_notes() -> None:
@@ -251,6 +253,9 @@ def print_notes() -> None:
         "-- Source code available | "
         "href=https://github.com/stared/xbar-rescuetime-activities"
     )
+    print("-- System info")
+    print(f"-- Python path: {sys.executable}")
+    print(f"-- Python version: {sys.version.split()[0]}")
 
 
 if __name__ == "__main__":
