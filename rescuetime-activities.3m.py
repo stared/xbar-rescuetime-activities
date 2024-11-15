@@ -19,7 +19,7 @@ import urllib.request
 
 MAPPING_COLOR = {
     2: "#27ae60",  # Dark green - very productive
-    1: "#2ecc71",  # Light green - productive
+    1: "#7ecc71",  # Light green - productive
     0: "#3498db",  # Blue - neutral
     -1: "#e67e22",  # Orange - distracting
     -2: "#e74c3c",  # Red - very distracting
