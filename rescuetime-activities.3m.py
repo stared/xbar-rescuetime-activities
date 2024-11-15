@@ -1,6 +1,6 @@
-#!/usr/bin/env -S PATH="${PATH}:/opt/homebrew/bin:/usr/local/bin" PYTHONIOENCODING=UTF-8 python3
+#!/usr/bin/env -S PATH="/opt/homebrew/Caskroom/mambaforge/base/bin:/opt/conda/bin:/opt/miniconda3/bin:/opt/homebrew/bin:/usr/local/bin:${PATH}" PYTHONIOENCODING=UTF-8 python3
 # <xbar.title>RescueTime Activities</xbar.title>
-# <xbar.version>v1.5</xbar.version>
+# <xbar.version>v1.6</xbar.version>
 # <xbar.author>Piotr Migdał</xbar.author>
 # <xbar.author.github>stared</xbar.author.github>
 # <xbar.desc>List your RescueTime activities in the status bar.</xbar.desc>
@@ -37,7 +37,7 @@ def load_api_key() -> str:
             "Generate an API key in RescueTime | href=https://www.rescuetime.com/anapi/manage"
         )
         print("And set it in the plugin settings:")
-        print("xbar > Open Plugin > RescueTime API Key")
+        print("xbar > Open Plugin > RescueTime API Key (or ⌘+E)")
         exit()
     return api_key
 
@@ -192,7 +192,7 @@ def main() -> None:
 def print_header(productive_seconds: int, pulse: dict) -> None:
     print(f"{format_time(productive_seconds)} | color={pulse.get('color', '#000000')}")
     print("---")
-    print("RescueTime Activites | href=https://www.rescuetime.com/dashboard?src=bitbar")
+    print("RescueTime Activites | href=https://www.rescuetime.com/dashboard")
 
 
 def print_productivity_totals(activities: list[dict]) -> None:
@@ -240,6 +240,7 @@ def print_hourly_chart(hours_data: dict) -> None:
         print("To see daily chart install Pillow")
         print("-- most likely you need to run:")
         print(f"-- {sys.executable} -m pip install Pillow")
+        print("Then xbar > Refresh (or ⌘+R)")
 
 
 def print_notes() -> None:
