@@ -77,21 +77,18 @@ def format_time(seconds: int) -> str:
         return f"{minutes}m"
 
 
-def create_chart_image(hours_data: dict) -> str:
+def create_chart_image(
+    hours_data: dict, width: int = 200, height: int = 40, opacity: int = 127
+) -> str:
     """Create a minimalistic stacked bar chart image."""
     from PIL import Image, ImageDraw
     import base64
     from io import BytesIO
 
-    WIDTH = 200
-    HEIGHT = 40
-
-    img = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+    img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
     max_total = max(sum(prod_times.values()) for prod_times in hours_data.values())
-
-    OPACITY = 127
 
     def hex_to_rgba(hex_color: str, opacity: int) -> tuple:
         """Convert hex color to RGBA tuple."""
@@ -99,22 +96,22 @@ def create_chart_image(hours_data: dict) -> str:
         return rgb + (opacity,)
 
     colors = {
-        level: hex_to_rgba(MAPPING_COLOR[level], OPACITY) for level in range(-2, 3)
+        level: hex_to_rgba(MAPPING_COLOR[level], opacity) for level in range(-2, 3)
     }
 
-    bar_width = WIDTH // 24
+    bar_width = width // 24
     for hour in range(24):
         if hour not in hours_data or not any(hours_data[hour].values()):
             continue
 
         x = hour * bar_width
-        y_bottom = HEIGHT
+        y_bottom = height
 
         # Stack the bars for each productivity level
         for prod in [2, 1, 0, -1, -2]:
             if hours_data[hour][prod] > 0:
-                height = int((hours_data[hour][prod] / max_total) * HEIGHT)
-                y_top = y_bottom - height
+                bar_height = int((hours_data[hour][prod] / max_total) * height)
+                y_top = y_bottom - bar_height
 
                 draw.rectangle(
                     [x, y_top, x + bar_width, y_bottom],
