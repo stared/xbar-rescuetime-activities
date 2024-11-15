@@ -1,26 +1,20 @@
 #!/usr/bin/env PYTHONIOENCODING=UTF-8 python3
 # <xbar.title>RescueTime Activities</xbar.title>
-# <xbar.version>v1.4</xbar.version>
+# <xbar.version>v1.5</xbar.version>
 # <xbar.author>Piotr Migdał</xbar.author>
 # <xbar.author.github>stared</xbar.author.github>
-# <xbar.desc>List your RescueTime activities in the status bar</xbar.desc>
+# <xbar.desc>List your RescueTime activities in the status bar.</xbar.desc>
 # <xbar.dependencies>python, Pillow (optional)</xbar.dependencies>
 # <xbar.image>https://github.com/stared/xbar-rescuetime-activities/blob/main/xbar-rescuetime-activities-screenshot.png</xbar.image>
 # <xbar.abouturl>https://github.com/stared/xbar-rescuetime-activities</xbar.abouturl>
-
-#
-# You need a RescueTime account and API key.
-# Generate the key at https://www.rescuetime.com/anapi/manage
-# Put the API key in ~/Library/RescueTime.com/api.key
+# <xbar.var>string(VAR_RESCUETIME_API_KEY=""): RescueTime API key - create at https://www.rescuetime.com/anapi/manage</xbar.var>
+# <xbar.var>number(VAR_ACTIVITIES_LIMIT="15"): Limit the number of activities to show.</xbar.var>
 
 import os
 import json
 import datetime
 import urllib.parse
 import urllib.request
-
-
-API_KEY_PATH = os.path.expanduser("~/Library/RescueTime.com/api.key")
 
 MAPPING_COLOR = {
     2: "#27ae60",  # Dark green - very productive
@@ -29,22 +23,22 @@ MAPPING_COLOR = {
     -1: "#e67e22",  # Orange - distracting
     -2: "#e74c3c",  # Red - very distracting
 }
-TOP_ACTIVITIES = 15
 
 
-def load_api_key(api_key_path: str) -> str:
-    """Load the API key from the specified file path."""
-    if not os.path.exists(api_key_path):
+def load_api_key() -> str:
+    """Load the API key from environment variable VAR_RESCUETIME_API_KEY."""
+    api_key = os.environ.get("VAR_RESCUETIME_API_KEY")
+    if not api_key:
         print("X")
         print("---")
         print("Missing API Key")
         print(
             "Generate an API key in RescueTime | href=https://www.rescuetime.com/anapi/manage"
         )
-        print(f"and put it in {api_key_path}")
+        print("And set it in the plugin settings:")
+        print("xbar > Open Plugin > RescueTime API Key")
         exit()
-    with open(api_key_path) as fp:
-        return fp.read().strip()
+    return api_key
 
 
 def fetch_data(url: str, params: dict) -> dict:
@@ -161,7 +155,7 @@ def get_hourly_productivity_data(key: str, date_str: str) -> dict:
 
 
 def main() -> None:
-    key = load_api_key(API_KEY_PATH)
+    key = load_api_key()
     date_str = datetime.date.today().strftime("%Y-%m-%d")
 
     activities = rescuetime_activity_data(
@@ -223,7 +217,8 @@ def print_productivity_totals(activities: list[dict]) -> None:
 
 def print_top_activities(activities: list[dict]) -> None:
     print("Top activities")
-    for activity in activities[:TOP_ACTIVITIES]:
+    activities_limit = int(os.environ.get("VAR_ACTIVITIES_LIMIT", 15))
+    for activity in activities[:activities_limit]:
         seconds = activity["Time Spent (seconds)"]
         name = activity["Activity"]
         productivity = activity["Productivity"]
