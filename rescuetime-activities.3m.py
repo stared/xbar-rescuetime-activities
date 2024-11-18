@@ -187,7 +187,8 @@ def main() -> None:
 
 
 def print_header(productive_seconds: int, pulse: dict) -> None:
-    print(f"{format_time(productive_seconds)} | color={pulse.get('color', '#000000')}")
+    color = pulse["color"] or "#000000"  # for no logged data
+    print(f"{format_time(productive_seconds)} | color={color}")
     print("---")
     print("RescueTime Activites | href=https://www.rescuetime.com/dashboard")
 
